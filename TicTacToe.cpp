@@ -8,9 +8,12 @@ using namespace std;
 class TicTacToe {
 private:
 	int fieldSize = 3;
-	char firstPlayer = 'x';
-	char nextPlayer = firstPlayer;
+
+	char firstPlayer = 'X';
+	char currentPlayer = firstPlayer;
+
 	bool endGame = false;
+
 	vector<vector<char>> field;
 
 	void fillField() {
@@ -19,86 +22,62 @@ private:
 	}
 
 	bool checkDraw() const {
-		bool flagDraw = true;
-
-		for (auto& row : field)
-			for (auto& col : row)
+		for (auto& row : field) {
+			for (auto& col : row) {
 				if (col == '.') {
-					flagDraw = false;
-					break;
+					return false;
 				}
+			}
+		}
 
-		return flagDraw;
+		return true;
 	}
 
 	bool checkDiagonal() const {
-		bool flagWin = true;
-
 		for (int i = 1; i < fieldSize; i++) {
-			if (field[i][i] != field[i - 1][i - 1] || field[i][i] == '.') {
-				flagWin = false;
-				break;
+			if (field[i][i] != field[i - 1][i - 1] || cellIsFree(i, i)) {
+				return false;
 			}
 		}
 
-		return flagWin;
+		return true;
 	}
 
 	bool checkSideDiagonal() const {
-		bool flagWin = true;
-
 		for (int i = 1; i < fieldSize; i++) {
-			if (field[i][fieldSize - i - 1] != field[i - 1][fieldSize - i] || field[i][fieldSize - i - 1] == '.') {
-				flagWin = false;
-				break;
+			if (field[i][fieldSize - i - 1] != field[i - 1][fieldSize - i] || cellIsFree(i, fieldSize - i - 1)) {
+				return false;
 			}
 		}
 
-		return flagWin;
+		return true;
 	}
 
 	bool checkRows() const {
-		bool flagWin;
-		for (int i = 0; i < fieldSize; i++) {
-		    flagWin = false;
-			for (int j = 1; j < fieldSize; j++) {
-				if (field[i][j] == field[i][j - 1] && field[i][j] != '.')
-					flagWin = true;
-				else {
-				    flagWin = false;
-				    break;
-				}
+		for (auto& row: field) {
+			if (count(row.begin(), row.end(), currentPlayer) == fieldSize) {
+				return true;
 			}
-			if (flagWin) break;
 		}
 
-		return flagWin;
+		return false;
 	}
 
 	bool checkCols() const {
-		bool flagWin;
-
 		for (int i = 0; i < fieldSize; i++) {
-		    flagWin = false;
-			for (int j = 1; j < fieldSize; j++) {
-				if (field[j][i] == field[j - 1][i] && field[j][i] != '.')
-					flagWin = true;
-				else {
-				    flagWin = false;
-					break;
+			for (int j = 0; j < fieldSize; j++) {
+				if (field[j][i] - currentPlayer != 0) {
+					return false;
 				}
 			}
-			if (flagWin) break;
 		}
 
-		return flagWin;
+		return true;
 	}
 
 	void checkEndGame() {
 		if (checkRows() || checkCols() || checkDiagonal() || checkSideDiagonal()) {
-			char winner = nextPlayer;
-			if (winner == 'x') winner = 'X';
-			cout << "Победитель - " << winner << endl;
+			cout << "Победитель - " << currentPlayer << endl;
 			endGame = true;
 		}
 		else if (checkDraw()) {
@@ -106,19 +85,39 @@ private:
 			endGame = true;
 		}
 	}
+
+	bool cellIsFree(int row, int col) const {
+		return field[row - 1][col - 1] == '.';
+	}
+
+	bool coordIsIn(int coord) const {
+		return coord >= 1 && coord <= fieldSize;
+	}
+
+	bool checkCoords(int row, int col) const {
+		return coordIsIn(row) && coordIsIn(col);
+	}
+
+	void changedPlayer() {
+		currentPlayer = (currentPlayer == 'X') ? '0' : 'X';
+	}
 public:
-	TicTacToe(char player='x') {
+	TicTacToe(int size=3, char player='X') {
+		fieldSize = size;
+
 		fillField();
 
 		if (player == '0') {
 			firstPlayer = player;
-			nextPlayer = firstPlayer;
+			currentPlayer = firstPlayer;
 		}
 	}
 
-	void show_table() const {
+	void showTable() const {
 		for (auto& row : field) {
-			for (auto& col : row) cout << col;
+			for (auto& col : row) {
+				cout << col;
+			}
 			cout << endl;
 		}
 	}
@@ -126,15 +125,18 @@ public:
 	void restart() {
 		fillField();
 		endGame = false;
-		nextPlayer = firstPlayer;
+		currentPlayer = firstPlayer;
 	}
 
-	void make_to_move(int row, int col) {
-		if (!endGame && row >= 1 && row <= fieldSize &&
-			col >= 1 && col <= fieldSize && field[row - 1][col - 1] == '.') {
-			field[row - 1][col - 1] = nextPlayer;
+	void makeToMove(int row, int col) {
+		if (endGame) {
+			cout << "Игра завершена" << endl;
+		}
+		else if (checkCoords(row, col) && cellIsFree(row, col)) {
+			field[row - 1][col - 1] = currentPlayer;
+
 			checkEndGame();
-			nextPlayer = (nextPlayer == 'x') ? '0' : 'x';
+			changedPlayer();
 		}
 		else {
 			cout << "Ход не может быть выполнен" << endl;
