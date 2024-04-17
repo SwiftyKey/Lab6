@@ -33,9 +33,9 @@ private:
 		return true;
 	}
 
-	bool checkDiagonal() const {
-		for (int i = 1; i < fieldSize; i++) {
-			if (field[i][i] != field[i - 1][i - 1] || cellIsFree(i, i)) {
+	bool checkVictoryInDiagonal() const {
+		for (int i = 0; i < fieldSize; i++) {
+			if (field[i][i] != currentPlayer) {
 				return false;
 			}
 		}
@@ -43,9 +43,9 @@ private:
 		return true;
 	}
 
-	bool checkSideDiagonal() const {
-		for (int i = 1; i < fieldSize; i++) {
-			if (field[i][fieldSize - i - 1] != field[i - 1][fieldSize - i] || cellIsFree(i, fieldSize - i - 1)) {
+	bool checkVictoryInSideDiagonal() const {
+		for (int i = 0; i < fieldSize; i++) {
+			if (field[i][fieldSize - i - 1] != currentPlayer) {
 				return false;
 			}
 		}
@@ -53,7 +53,7 @@ private:
 		return true;
 	}
 
-	bool checkRows() const {
+	bool checkVictoryInRows() const {
 		for (auto& row: field) {
 			if (count(row.begin(), row.end(), currentPlayer) == fieldSize) {
 				return true;
@@ -63,10 +63,10 @@ private:
 		return false;
 	}
 
-	bool checkCols() const {
+	bool checkVictoryInCols() const {
 		for (int i = 0; i < fieldSize; i++) {
 			for (int j = 0; j < fieldSize; j++) {
-				if (field[j][i] - currentPlayer != 0) {
+				if (field[j][i] != currentPlayer) {
 					return false;
 				}
 			}
@@ -76,7 +76,7 @@ private:
 	}
 
 	void checkEndGame() {
-		if (checkRows() || checkCols() || checkDiagonal() || checkSideDiagonal()) {
+		if (checkVictoryInRows() || checkVictoryInCols() || checkVictoryInDiagonal() || checkVictoryInSideDiagonal()) {
 			cout << "Победитель - " << currentPlayer << endl;
 			endGame = true;
 		}
